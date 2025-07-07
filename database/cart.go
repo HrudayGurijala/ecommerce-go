@@ -16,7 +16,7 @@ func AddProductToCart() {
 
 }
 
-func RemoveItemFromCart() {
+func RemoveCartItem() {
 
 }
 

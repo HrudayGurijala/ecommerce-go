@@ -16,5 +16,5 @@ func AddWorkddress() gin.HandlerFunc{
 }
 //delete address
 func DeleteAddress() gin.HandlerFunc{
-
+	
 }

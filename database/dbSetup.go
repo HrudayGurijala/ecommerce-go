@@ -12,8 +12,8 @@ import (
 const connectionString = "balh bhaaklashkdha"
 
 const dbName = "ecommerce"
-const UserColName = "users"
-const ProductColName = "products"
+const UserColName = "Users"
+const ProductColName = "Products"
 
 func DBSet() *mongo.Client {
 	clientOptions := options.Client().ApplyURI(connectionString)
