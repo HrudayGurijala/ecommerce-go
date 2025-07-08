@@ -8,6 +8,7 @@ import (
 
 	"github.com/HrudayGurijala/ecommerce-go/database"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -22,7 +23,15 @@ type SignedDetails struct {
 }
 
 var UserData *mongo.Collection = database.UserData(database.Client, "Users")
-var SECRET_KEY = os.Getenv("SECRET_LOVE")
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+}
+
+var SECRET_KEY = os.Getenv("SECRET_KEY")
 
 func TokenGenerator(email, firstname, lastname, uid string) (signedtoken string, signedrefreshtoken string, err error) {
 	claims := &SignedDetails{

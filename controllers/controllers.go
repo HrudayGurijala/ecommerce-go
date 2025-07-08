@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/HrudayGurijala/ecommerce-go/database"
 	"github.com/HrudayGurijala/ecommerce-go/models"
+	generate "github.com/HrudayGurijala/ecommerce-go/tokens"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/bson"
@@ -32,7 +34,7 @@ func HashPassword(password string) string {
 
 // verifypassword
 func VerifyPassword(userPassword string, givenPassword string) (bool, string) {
-	err := bcrypt.CompareHashAndPassword([]byte(userPassword), []byte(givenPassword))
+	err := bcrypt.CompareHashAndPassword([]byte(givenPassword), []byte(userPassword))
 	valid := true
 	msg := ""
 
@@ -69,7 +71,10 @@ func SignUp() gin.HandlerFunc {
 		}
 		if count > 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "user already exists with this mail, login"})
+			c.Abort()
+			return
 		}
+		defer cancel()
 
 		count, err = UserCollection.CountDocuments(ctx, bson.M{"phone": user.Phone})
 		defer cancel()
@@ -80,14 +85,20 @@ func SignUp() gin.HandlerFunc {
 		}
 		if count > 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "user already exists with this phone number, login"})
+			c.Abort()
+			return
 		}
-
+		password := HashPassword(*user.Password)
+		user.Password = &password
 		user.Created_At, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		user.Updated_At, _ = time.Parse(time.RFC3339, time.Now().Format(time.RFC3339))
 		user.ID = primitive.NewObjectID()
 		user.User_ID = user.ID.Hex()
-		//tokens logic here
 
+		//tokens logic here
+		token, refreshtoken, _ := generate.TokenGenerator(*user.Email, *user.First_Name, *user.Last_Name, user.User_ID)
+		user.Token = &token
+		user.Refresh_Token = &refreshtoken
 		user.UserCart = make([]models.ProductUser, 0)
 		user.Address_Details = make([]models.Address, 0)
 		user.Order_Status = make([]models.Order, 0)
@@ -95,7 +106,7 @@ func SignUp() gin.HandlerFunc {
 		//inserting into the database
 		_, inserterr := UserCollection.InsertOne(ctx, user)
 		if inserterr != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": inserterr})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "insert to db error"})
 		}
 		defer cancel()
 
@@ -111,11 +122,11 @@ func Login() gin.HandlerFunc {
 		defer cancel()
 
 		var user models.User
+		var founduser models.User
 		if err := c.BindJSON(&user); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
-		var founduser models.User
 		err := UserCollection.FindOne(ctx, bson.M{"email": user.Email}).Decode(&founduser)
 		if err != nil {
 			log.Panic(err)
@@ -126,10 +137,14 @@ func Login() gin.HandlerFunc {
 
 		if !PasswordIsValid {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": msg})
+			fmt.Println(msg)
 			return
 		}
 
 		//generate jwt token
+		token, refreshToken, _ := generate.TokenGenerator(*founduser.Email, *founduser.First_Name, *founduser.Last_Name, founduser.User_ID)
+		defer cancel()
+		generate.UpdateAllTokens(token, refreshToken, founduser.User_ID)
 
 		c.JSON(http.StatusFound, founduser)
 	}
@@ -137,7 +152,23 @@ func Login() gin.HandlerFunc {
 
 // productviewer admin
 func ProductViewerAdmin() gin.HandlerFunc {
-
+	return func(c *gin.Context) {
+		var ctx, cancel = context.WithTimeout(context.Background(), 100*time.Second)
+		var products models.Product
+		defer cancel()
+		if err := c.BindJSON(&products); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		products.Product_ID = primitive.NewObjectID()
+		_, anyerr := ProductCollection.InsertOne(ctx, products)
+		if anyerr != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Not Created"})
+			return
+		}
+		defer cancel()
+		c.JSON(http.StatusOK, "Successfully added our Product Admin!!")
+	}
 }
 
 // search product

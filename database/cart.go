@@ -118,7 +118,6 @@ func BuyItemFromCart(ctx context.Context, userCollection *mongo.Collection, user
 	_, err = userCollection.UpdateOne(ctx, filtered, updated)
 	if err != nil {
 		return ErrCantBuyCartItem
-
 	}
 	return nil
 }
