@@ -2,7 +2,7 @@
 
 This project is an e-commerce application built with Golang, featuring various API endpoints for user management, product handling, shopping cart functionality, and order processing.
 
-I will update with a postman collection soon.
+### Postman Collection - [postman](https://www.postman.com/aerospace-architect-44468169/workspace/ecommerce-go/collection/37421704-5e0e8778-05c8-40ab-a619-18fef3062186?action=share&source=copy-link&creator=37421704)
 
 ## Getting Started
 
@@ -183,7 +183,7 @@ Searches for products whose names match a given regex pattern.
 
 Adds a specified product to a user's shopping cart.
 
-  - **URL:** `http://localhost:8000/addtocart?id=xxxproduct_idxxx&userID=xxxxxxuser_idxxxxxx`
+  - **URL:** `http://localhost:8000/addtocart?id={productid}&userID={userid}`
   - **Method:** `GET`
   - **Note:** This action corresponds to a MongoDB query that updates the user's cart.
 
@@ -191,14 +191,14 @@ Adds a specified product to a user's shopping cart.
 
 Removes a specified product from a user's shopping cart.
 
-  - **URL:** `http://localhost:8000/removeitem?id=xxxxxxx&userID=xxxxxxxxxxxx`
+  - **URL:** `http://localhost:8000/removeitem?id={productid}&userID={userid}`
   - **Method:** `GET`
 
 #### **8. List Items in User's Cart and Total Price**
 
 Retrieves all items currently in a user's cart along with the total price.
 
-  - **URL:** `http://localhost:8000/listcart?id=xxxxxxuser_idxxxxxxxxxx`
+  - **URL:** `http://localhost:8000/listcart?id={userid}`
   - **Method:** `GET`
 
 ### Address Management
@@ -226,7 +226,7 @@ Adds a new address to a user's profile. The user is limited to two addresses (ho
 
 Updates a user's home address.
 
-  - **URL:** `http://localhost:8000/edithomeaddress?id=xxxxxxxxxxuser_idxxxxxxxxxxxxxxx`
+  - **URL:** `http://localhost:8000/edithomeaddress?id={userid}`
   - **Method:** `PUT`
   - **Request Body (JSON):** (Same as Add Address)
 
@@ -234,7 +234,7 @@ Updates a user's home address.
 
 Updates a user's work address.
 
-  - **URL:** `http://localhost:8000/editworkaddress?id=xxxxxxxxxxuser_idxxxxxxxxxxxxxxx`
+  - **URL:** `http://localhost:8000/editworkaddress?id={userid}`
   - **Method:** `PUT`
   - **Request Body (JSON):** (Same as Add Address)
 
@@ -242,7 +242,7 @@ Updates a user's work address.
 
 Deletes both home and work addresses for a given user.
 
-  - **URL:** `http://localhost:8000/deleteaddresses?id=xxxxxxxxxuser_idxxxxxxxxxxxxx`
+  - **URL:** `http://localhost:8000/deleteaddresses?id={userid}`
   - **Method:** `GET`
 
 ### Order Processing
@@ -251,12 +251,12 @@ Deletes both home and work addresses for a given user.
 
 Processes the items in the user's cart as an order. After placing the order, the items are removed from the cart.
 
-  - **URL:** `http://localhost:8000/cartcheckout?id=xxuser_idxxx`
+  - **URL:** `http://localhost:8000/cartcheckout?id={userid}`
   - **Method:** `GET`
 
 #### **14. Instantly Buy Product**
 
 Allows a user to directly purchase a single product without adding it to the cart first.
 
-  - **URL:** `http://localhost:8000/instantbuy?userid=xxuser_idxxx&pid=xxxxproduct_idxxxx`
+  - **URL:** `http://localhost:8000/instantbuy?userid={userid}&pid={productid}`
   - **Method:** `GET`
